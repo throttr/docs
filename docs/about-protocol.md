@@ -10,11 +10,11 @@ The Throttr server and SDK's, implements a binary protocol on their codes. This 
 
 ### Time to Live (TTL)
 
-Is a period of time computed from the `now()` function of the server plus the amount units on the respective time system used. During that period, the TTL can be considered as valid.
+Is a period of time computed from the `now()` function of the server plus the amount units on the respective time system used. During that period, the resource attached to the TTL can be considered as valid.
 
-Using other words, a TTL defined to 60 seconds will be marked as expired and removed by the scheduler after a minute.
+In example; a TTL of 60 seconds will be marked as expired and removed by the scheduler after a minute.
 
-### TTL type
+### TTL Types
 
 Is the time unit system used to measure the TTL on the record.
 
@@ -39,7 +39,7 @@ Records are designed to expire in some time point. That point is established whe
 
 Is a unique value to identify the record in the system. His value is stored in a binary container and comparable using hashing. You can define the keys that fit with your use cases.
 
-### Maximum values
+### Maximum Values
 
 The protocol defines a numeric limit to all operations and it must be selected to fit with the use case.
 
@@ -58,7 +58,7 @@ Then:
 
 Because if you choose the optimal variant, you'll reduce the RAM and Bandwidth used by the server and clients. If your cases can be solved by `uint8` then, using `uint64`, you'll be wasting `7 bytes` per dynamic field.
 
-### Dynamic value size
+### Dynamic Value Size
 
 The dynamic size (`N`) is the variable quantity of bytes who are used on dynamic fields, previously described to store and transmit data. So:
 
@@ -117,7 +117,14 @@ The client will receive `0x01` on success or `0x00` on failure.
 using size uint16;
 
 // Built the buffer.
-set buffer = [0x01 0x02 0x00 0x04 0x03 0x00 0x05 0x07 0x07 0x07 0x07 0x07];
+set buffer = [
+  0x01
+  0x02 0x00 
+  0x04 
+  0x03 0x00 
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
 
 // Explain the buffer ...
 explain(buffer);
@@ -201,7 +208,11 @@ If the status was `success`, then, it also will include:
 using size uint16;
 
 // Built the buffer.
-set buffer = [0x02 0x05 0x07 0x07 0x07 0x07 0x07];
+set buffer = [
+  0x02
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
 
 // Explain the buffer ...
 explain(buffer);
@@ -315,7 +326,11 @@ The client will receive `0x01` on success or `0x00` on failure.
 using size uint16;
 
 // Built the buffer.
-set buffer = [0x02 0x05 0x07 0x07 0x07 0x07 0x07];
+set buffer = [
+  0x02 
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
 
 // Explain the buffer ...
 explain(buffer);
@@ -395,7 +410,11 @@ The client will receive `0x01` on success or `0x00` on failure.
 using size uint16;
 
 // Built the buffer.
-set buffer = [0x02 0x05 0x07 0x07 0x07 0x07 0x07];
+set buffer = [
+  0x04
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
 
 // Explain the buffer ...
 explain(buffer);
@@ -438,4 +457,105 @@ explain(response);
 =====================================
 == Status: 0x00         => failed  ==
 =====================================
+```
+
+### SET
+
+This request can add buffers to the memory.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x05`.
+
+##### TTL type
+
+Is the TTL type used by the counter. Contained in `1 byte`.
+
+##### TTL
+
+Is the amount in TTL units applicable to the counter. Contained in `N bytes`.
+
+##### Size of key
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+
+##### Size of value
+
+Is the quantity of chars (`O`) used by the value. Contained in `1 byte`.
+
+##### Key
+
+Is the key of the record. Contained in `M bytes`.
+
+##### Value
+
+Is the value of the record. Contained in `O bytes`.
+
+#### Response
+
+The server resolve this request by sending `1 byte` response.
+
+The client will receive `0x01` on success or `0x00` on failure.
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x05 
+  0x04 
+  0x03 0x00 
+  0x05 
+  0x04 0x00 
+  0x07 0x07 0x07 0x07 0x07 
+  0x45 0x48 0x4C 0x4F
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+===================================================
+== Request Type: 0x05             => SET         ==
+== TTL Type: 0x04                 => seconds     ==
+== TTL: 0x03 0x00                 => 3           ==
+== Length(Key): 0x05              => 5           ==
+== Length(Value): 0x04 0x00       => 4           ==
+== Key: 0x07 0x07 0x07 0x07 0x07  => bytes       ==
+== Value: 0x45 0x48 0x4C 0x4F     => EHLO        ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv()
+
+// Explain the response ...
+explain(response);
+
+// If the key doesn't exists ...
+
+==================
+== Buffer: 0x01 ==
+==================
+
+=============================
+== Status: 0x01 => success ==
+=============================
+
+// Or if the key exists ...
+
+==================
+== Buffer: 0x00 ==
+==================
+
+=============================
+== Status: 0x00 => failed  ==
+=============================
 ```
