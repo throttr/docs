@@ -145,6 +145,8 @@ public class InMemoryDatabase {
 }
 ```
 
+See more examples in [tests](https://github.com/throttr/java/blob/master/src/test/java/cl/throttr/ServiceTest.java).
+
 ## Technical Notes
 
 - The protocol assumes Little Endian architecture.
@@ -155,4 +157,4 @@ public class InMemoryDatabase {
 
 ## License
 
-Distributed under the [GNU Affero General Public License v3.0](./LICENSE).
+Distributed under the [GNU Affero General Public License v3.0](https://github.com/throttr/java/blob/master/LICENSE).

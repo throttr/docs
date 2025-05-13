@@ -99,6 +99,8 @@ echo "GET value: " . $get->value() . PHP_EOL; // Must be "EHLO"
 $service->close();
 ```
 
+See more examples in [tests](https://github.com/throttr/php/blob/master/tests/ServiceTest.php).
+
 ## Technical Notes
 
 - The protocol assumes Little Endian architecture.
@@ -109,4 +111,4 @@ $service->close();
 
 ## License
 
-Distributed under the [GNU Affero General Public License v3.0](./LICENSE).
+Distributed under the [GNU Affero General Public License v3.0](https://github.com/throttr/php/blob/master/LICENSE).

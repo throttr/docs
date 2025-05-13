@@ -103,7 +103,7 @@ await service.send({
 service.disconnect();
 ```
 
-See more examples in [tests](./tests/service.test.ts).
+See more examples in [tests](https://github.com/throttr/typescript/blob/master/tests/service.test.ts).
 
 
 ## Technical Notes
@@ -116,4 +116,4 @@ See more examples in [tests](./tests/service.test.ts).
 
 ## License
 
-Distributed under the [GNU Affero General Public License v3.0](./LICENSE).
+Distributed under the [GNU Affero General Public License v3.0](https://github.com/throttr/typescript/blob/master/LICENSE).
