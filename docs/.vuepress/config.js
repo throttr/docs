@@ -5,7 +5,7 @@ import { viteBundler } from '@vuepress/bundler-vite'
 export default defineUserConfig({
   lang: 'en-US',
 
-  title: 'Throttr — Sovereign Rate Limiter',
+  title: 'Throttr — Sovereign In-Memory Service',
   description: 'The limit is set by your machine.',
 
   theme: defaultTheme({

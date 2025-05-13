@@ -40,7 +40,71 @@ docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint64
 
 ### Building from Source
 
-> This section is under construction.
+Throttr Server requires:
+
+- Boost 1.87.0
+
+The following guide has been built to `Debian 12`:
+
+```shell
+# Update system
+apt update
+
+# Install build dependencies
+apt-get install -y lsb-release \
+                   gnupg \
+                   git \
+                   wget \
+                   build-essential \
+                   cmake \
+                   gcc \
+                   make \
+                   apt-utils \
+                   zip \
+                   unzip \
+                   tzdata \
+                   libtool \
+                   automake \
+                   m4 \
+                   re2c \
+                   curl \
+                   supervisor \
+                   libssl-dev \
+                   zlib1g-dev \
+                   libcurl4-gnutls-dev \
+                   libprotobuf-dev \
+                   python3 \
+                   lcov \
+                   doxygen \
+                   graphviz \
+                   rsync \
+                   gcovr
+
+# Getting Boost 1.87.0
+wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz
+
+# Extract, move and compile
+tar -xf boost_1_87_0.tar.gz
+cd boost_1_87_0
+sh bootstrap.sh --with-libraries=all
+./b2 install debug variant=debug debug-symbols=on --without-python
+```
+
+After that, you can clone the repository:
+
+```shell
+# Clone the repository
+git clone https://github.com/throttr/throttr.git
+
+# Move, build and test
+cd throttr
+mkdir build
+cmake .. -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=ON
+make
+ctest
+```
+
+Now you should find `throttr` binary inside build folder and that's all folks.
 
 ## Software Development Kit's
 
