@@ -1,12 +1,16 @@
-# About Protocolo Throttr
-
-This is a normal page, which contains VuePress basics.
+# About Throttr Protocol
 
 ## Introduction
 
-The Throttr server and SDK's, implements a binary protocol on their codes. This protocol defines all the request types and responses. 
+The Throttr Server, including the SDK's, implements a binary protocol on their codes. The protocol defines all the request types and responses in order to make transactions efficient and well-known. 
+
+All the source code is available under the [official GitHub repository][]
 
 ## Definitions
+
+If you want to understand the logic behind the scene, and you're developer or architect, then, this documentation is great for you because it explains byte per byte how Throttr message protocol works.
+
+To start that process, I consider absolutely necessary talk about some concepts first.
 
 ### Time to Live (TTL)
 
@@ -559,3 +563,100 @@ explain(response);
 == Status: 0x00 => failed  ==
 =============================
 ```
+
+### GET
+
+This request can retrieve `buffers`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x06`.
+
+##### Size of key
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+##### Key
+
+Is the key of the record. Contained in `M bytes`.
+
+#### Response
+
+The server, usually, resolve this request by sending `1 byte` response.
+
+The client will receive `0x01` on success or `0x00` on failure.
+
+If the status was `success`, then, it also will include:
+
+
+| Field            | Size      |
+|------------------|-----------|
+| TTL TYPE         | `1 byte`  |
+| TTL              | `N bytes` |
+| VALUE SIZE (`O`) | `N bytes` |
+| VALUE            | `O bytes` |
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x06
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+================================================
+== Buffer: 0x06 0x05 0x07 0x07 0x07 0x07 0x07 ==
+================================================
+
+===================================================
+== Request Type: 0x06             => GET         ==
+== Length(Key): 0x05              => 5           ==
+== Key: 0x07 0x07 0x07 0x07 0x07  => bytes       ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv()
+
+// Explain the response ...
+explain(response);
+
+// If the key exists then ...
+
+=========================================================
+Buffer: 0x01 0x04 0x03 0x00 0x04 0x00 0x45 0x48 0x4C 0x4F
+=========================================================
+
+=============================================
+== Status: 0x01                 => success ==
+== Quota: 0x02 0x00             => 2       ==
+== TTL Type: 0x04               => seconds ==
+== TTL: 0x03 0x00               => 3       ==
+== Size(Value): 0x04 0x00       => 4       ==
+== Value:0x45 0x48 0x4C 0x4F    => EHLO    ==
+=============================================
+
+// Or if the key doesn't exists ...
+
+==================
+== Buffer: 0x00 ==
+==================
+
+=====================================
+== Status: 0x00         => failed  ==
+=====================================
+```
+
+[official GitHub repository]: https://github.com/throttr/protocol

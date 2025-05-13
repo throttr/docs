@@ -1,52 +1,61 @@
 # Get Started
 
-This is a normal page, which contains VuePress basics.
+## Run the Server
 
-## About the Project
+There are a different ways to get Throttr Server running.
 
-Throttr es una tecnología que te permite limitar transacciones en ventanas horarias y almacenar información en memoria por vía de un servidor TCP que acepta solicitudes y genera respuestas en formato binario.
+### Using Binaries
 
-Sí estás interesado en conocer el protocolo, te invitamos a [visitar su documentación](./about-protocol.md)
+This is the most easy and fast way to get an instance ready to accept connections and handle requests.
 
-##
+The first step is go to the [Throttr Server Repository][] and click on `Releases`.
 
-You can add markdown files in your vuepress directory, every markdown file will be converted to a page in your site.
+![Assets per release](/images/releases-assets.png)
 
-See [routing][] for more details.
+Download and extract it. You can run it by using the following command:
 
-## Content
+```bash
+./throttr --port=9000 --threads=4
+```
 
-Every markdown file [will be rendered to HTML, then converted to a Vue SFC][content].
+### Using Docker
 
-VuePress support basic markdown syntax and [some extensions][synatex-extensions], you can also [use Vue features][vue-feature] in it.
+This is the most easy and fast way to get 
 
-## Configuration
+```bash
+// For Quotas/TTL and Buffers
 
-VuePress use a `.vuepress/config.js`(or .ts) file as [site configuration][config], you can use it to config your site.
+// Upto 255
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint8
 
-For [client side configuration][client-config], you can create `.vuepress/client.js`(or .ts).
+// Upto 65.535
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint16
 
-Meanwhile, you can also add configuration per page with [frontmatter][].
+// Upto 4.294.967.295
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint32
 
-## Layouts and customization
+// Upto 2^64 - 1
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint64
+```
 
-Here are common configuration controlling layout of `@vuepress/theme-default`:
+### Building from Source
 
-- [navbar][]
-- [sidebar][]
+> This section is under construction.
 
-Check [default theme docs][default-theme] for full reference.
+## Software Development Kit's
 
-You can [add extra style][style] with `.vuepress/styles/index.scss` file.
 
-[routing]: https://vuejs.press/guide/page.html#routing
-[content]: https://vuejs.press/guide/page.html#content
-[synatex-extensions]: https://vuejs.press/guide/markdown.html#syntax-extensions
-[vue-feature]: https://vuejs.press/guide/markdown.html#using-vue-in-markdown
-[config]: https://vuejs.press/guide/configuration.html#client-config-file
-[client-config]: https://vuejs.press/guide/configuration.html#client-config-file
-[frontmatter]: https://vuejs.press/guide/page.html#frontmatter
-[navbar]: https://vuejs.press/reference/default-theme/config.html#navbar
-[sidebar]: https://vuejs.press/reference/default-theme/config.html#sidebar
-[default-theme]: https://vuejs.press/reference/default-theme/
-[style]: https://vuejs.press/reference/default-theme/styles.html#style-file
+| SDK                    | Documentation           |
+|------------------------|-------------------------|
+| [SDK for TypeScript][] | [TS: Read the docs][]   |
+| [SDK for PHP][]        | [PHP: Read the docs][]  |
+| [SDK for Java][]       | [Java: Read the docs][] |
+
+
+[Throttr Server Repository]: https://github.com/throttr/throttr
+[SDK for TypeScript]: https://github.com/throttr/typescript
+[SDK for PHP]: https://github.com/throttr/php
+[SDK for Java]: https://github.com/throttr/java
+[TS: Read the docs]: ./sdk/typescript.md
+[PHP: Read the docs]: ./sdk/php.md
+[Java: Read the docs]: ./sdk/java.md
