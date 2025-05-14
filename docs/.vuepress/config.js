@@ -12,6 +12,8 @@ export default defineUserConfig({
     logo: '/images/logo.png',
 
     navbar: ['/', '/get-started', '/about-protocol'],
+
+    sidebarDepth: 5,
   }),
 
   bundler: viteBundler(),

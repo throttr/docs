@@ -87,7 +87,12 @@ wget https://archives.boost.io/release/1.87.0/source/boost_1_87_0.tar.gz
 tar -xf boost_1_87_0.tar.gz
 cd boost_1_87_0
 sh bootstrap.sh --with-libraries=all
-./b2 install debug variant=debug debug-symbols=on --without-python
+./b2 install debug \
+             variant=debug \
+             debug-symbols=on \
+             link=static \
+             runtime-link=static \
+             --without-python
 ```
 
 After that, you can clone the repository:

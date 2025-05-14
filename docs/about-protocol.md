@@ -73,6 +73,24 @@ The dynamic size (`N`) is the variable quantity of bytes who are used on dynamic
 | uint32  | 4 bytes |
 | uint64  | 8 bytes |
 
+### Endianness
+
+The endianness is the way how multi-byte data is stored in memory.
+
+**Big Endian** stores the most significant byte first, meaning the highest-order byte comes at the lowest memory address.
+
+**Little Endian**, on the other hand, stores the least significant byte first.
+
+For example, the number 2 represented in two bytes would be stored as:
+
+- `0x00 0x02` in Big Endian
+- `0x02 0x00` in Little Endian
+
+This order affects how data is interpreted when reading raw bytes in memory or across systems.
+
+Throttr use `little endian` by default. This reduces the amount of mathematical operations to reorder the data on compatible architecture. Almost all current CPU architecture uses little-endian by default. 
+
+Usually, standards of `IETF`, `IEEE` and `ISO` recommend `big endian`. This protocol doesn't try go against the standard. The protocol tries avoid as possible, the undesired and forced conversion operations, in order to provide less contention.
 
 ## Request types
 
