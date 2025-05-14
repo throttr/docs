@@ -113,8 +113,10 @@ Now you should find `throttr` binary inside build folder and that's all folks.
 
 ## Software Development Kit's
 
+We have the following SDK's available:
 
-| SDK                    | Documentation           |
+
+| Repository             | Documentation           |
 |------------------------|-------------------------|
 | [SDK for TypeScript][] | [TS: Read the docs][]   |
 | [SDK for PHP][]        | [PHP: Read the docs][]  |

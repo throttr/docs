@@ -1,9 +1,5 @@
 # Java
 
-Java client for communicating with a [Throttr Server](https://github.com/throttr/throttr).
-
-The SDK enables [in-memory data objects](https://en.wikipedia.org/wiki/In-memory_database) and [rate limiting](https://en.wikipedia.org/wiki/Rate_limiting) efficiently, only using TCP, respecting the server's native binary protocol.
-
 ## Installation
 
 Add the dependency to your `pom.xml`:
@@ -20,129 +16,218 @@ Make sure to configure your Maven repositories to include GitHub Packages if nee
 
 ## Basic Usage
 
-### As Rate Limiter
+### Get Connected
+
+Use the Service to create a communication channel between your application and Throttr server.
 
 ```java
-package your.source;
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
 
-import cl.throttr.Service;
-import cl.throttr.enums.ValueSize;
-import cl.throttr.requests.InsertRequest;
-import cl.throttr.requests.QueryRequest;
-import cl.throttr.requests.UpdateRequest;
-import cl.throttr.requests.PurgeRequest;
-import cl.throttr.enums.TTLType;
-import cl.throttr.enums.AttributeType;
-import cl.throttr.enums.ChangeType;
-import cl.throttr.responses.QueryResponse;
-import cl.throttr.responses.StatusResponse;
+String HOST = "127.0.0.1";
+int PORT = 9000;
+int MAX_CONNECTIONS = 4;
+ValueSize DYNAMIC_VALUE_SIZE = ValueSize.UINT16;
 
-public class RateLimiter {
-
-    public static void main(String[] args) {
-        Service service = new Service("127.0.0.1", 9000, ValueSize.UINT16, 1);
-        service.connect();
-
-        String key = UUID.randomUUID().toString();
-
-        // INSERT with quota=7 and ttl=60
-        StatusResponse insert = (StatusResponse) service.send(new InsertRequest(7, TTLType.SECONDS, 60, key));
-        System.out.println("Insert has been success: " + insert.success());
-
-        // QUERY and validate
-        QueryResponse q1 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out.println("Key exists: " + q1.success());
-        System.out.println("Quota is 7: " + q1.quota() == 7);
-        System.out.println("TTL type is seconds: " + q1.ttlType() == TTLType.SECONDS);
-        System.out.println("TTL is between 0 and 60: " + (q1.ttl() > 0 && q1.ttl() < 60));
-
-        // UPDATE: DECREASE quota by 7
-        StatusResponse dec1 = (StatusResponse) service.send(new UpdateRequest(AttributeType.QUOTA, ChangeType.DECREASE, 7, key));
-        System.out.println("Quota has been decreased: " + dec1.success());
-
-        // UPDATE: DECREASE quota again -> should fail
-        StatusResponse dec2 = (StatusResponse) service.send(new UpdateRequest(AttributeType.QUOTA, ChangeType.DECREASE, 7, key));
-        System.out.println("Quota has been decreased: " + dec2.success());
-
-        // QUERY -> quota should be 0
-        QueryResponse q2 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out.println("Quota is 0: " + q2.quota() == 0);
-
-        // UPDATE: PATCH quota to 10
-        StatusResponse patchQuota = (StatusResponse) service.send(new UpdateRequest(AttributeType.QUOTA, ChangeType.PATCH, 10, key));
-        System.out.println("Quota has been patched: " + patchQuota.success());
-
-        // QUERY -> quota should be 10
-        QueryResponse q3 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out.println("Quota is 10: " + q3.quota() == 10);
-
-        // UPDATE: INCREASE quota by 20 -> should be 30
-        StatusResponse incQuota = (StatusResponse) service.send(new UpdateRequest(AttributeType.QUOTA, ChangeType.INCREASE, 20, key));
-        System.out.println("Quota has been increased: " + incQuota.success());
-
-        // QUERY -> quota should be 30
-        QueryResponse q4 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out.println("Quota is equals to 30: " + q4.quota() == 30);
-
-        // UPDATE: INCREASE TTL by 60 -> ttl > 60 and < 120
-        StatusResponse incTtl = (StatusResponse) service.send(new UpdateRequest(AttributeType.TTL, ChangeType.INCREASE, 60, key));
-        System.out.println("TTL has been increased: " + incTtl.success());
-
-        QueryResponse q5 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out.println("TTL is between 60 and 120: " + (q5.ttl() > 60 && q5.ttl() < 120));
-
-        // UPDATE: DECREASE TTL by 60 -> ttl < 60
-        StatusResponse decTtl = (StatusResponse) service.send(new UpdateRequest(AttributeType.TTL, ChangeType.DECREASE, 60, key));
-        System.out.println("TTL has been decrease: " + decTtl.success());
-
-        QueryResponse q6 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out("TTL is between 0 and 60: " + (q6.ttl() > 0 && q6.ttl() < 60));
-
-        // UPDATE: PATCH TTL to 90 -> ttl ~90
-        StatusResponse patchTtl = (StatusResponse) service.send(new UpdateRequest(AttributeType.TTL, ChangeType.PATCH, 90, key));
-        System.out("TTL has been patched: " + patchTtl.success());
-
-        QueryResponse q7 = (QueryResponse) service.send(new QueryRequest(key));
-        System.out.println("TTL is between 60 and 90" + (q7.ttl() > 60 && q7.ttl() <= 90));
-
-        // PURGE
-        StatusResponse purge = (StatusResponse) service.send(new PurgeRequest(key));
-        System.out.println("Key has been purged: " + purge.success());
-
-        service.close();
-    }
-}
+Service service = new Service(
+    HOST,
+    PORT, 
+    DYNAMIC_VALUE_SIZE, 
+    MAX_CONNECTIONS
+);
+ 
+service.connect();
 ```
 
-### As Database
+After that, `service` will be a instance that can be used in concurrently.
+
+Every connection contained in service has his own requests resolve promise queue. This guarantees
+that every single request make against the server will be resolved one by one. Even, if you sent it as batch.
+
+Requests **can fail**, mainly, for external causes. I/O, Network stability and so on. Using `try / catch` is recommended.
+
+### Sending Requests
+
+The following operations are based in Throttr protocol `v5.0.0`.
+
+#### INSERT
+
+If you want to create a `counter` to track requests or metrics. Then `INSERT` is for you.
 
 ```java
-import cl.throttr.Service;
-import cl.throttr.enums.ValueSize;
-import cl.throttr.requests.SetRequest;
-import cl.throttr.requests.GetRequest;
-import cl.throttr.requests.PurgeRequest;
-import cl.throttr.enums.TTLType;
-import cl.throttr.responses.GetResponse;
-import cl.throttr.responses.StatusResponse;
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
 
-public class InMemoryDatabase {
+String KEY = "NON_EXISTING_KEY";
+int QUOTA = 5;
+int TTL = 60;
+TTLType TTL_TYPE = TTLType.SECONDS;
 
-    public static void main(String[] args) {
-        Service service = new Service("127.0.0.1", 9000, ValueSize.UINT16, 1);
-        service.connect();
+StatusResponse response = service.send(
+    new InsertRequest(
+        QUOTA,
+        TTL_TYPE,
+        TTL,
+        KEY
+    )
+);
 
-        String key = UUID.randomUUID().toString();
-        String value = "EHLO";
-        int ttl = 30;
+System.out.println("Status: " + response.success());
+```
 
-        StatusResponse set = (StatusResponse) service.send(new SetRequest(TTLType.SECONDS, ttl, key, value));
-        System.out.println("EHLO has been set " + set.success());
+There are only one condition that `success` can be `false`, and is, when the `key` already exists.
 
-        GetResponse get = (GetResponse) service.send(new GetRequest(key));
-        System.out.println("Value is: " + new String(get.value())); // Must be EHLO
-    }
-}
+#### QUERY
+
+If you want to recover the `counter` value or TTL specification. Then `QUERY` is for you.
+
+```java
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
+
+String KEY = "EXISTING_KEY";
+
+QueryResponse response = service.send(
+    new QueryRequest(
+        KEY
+    )
+);
+
+System.out.println("Status: " + response.success());
+System.out.println("Quota: " + response.quota());
+System.out.println("TTL Type: " + response.ttlType());
+System.out.println("TTL: " + response.ttl());
+```
+
+There are only one condition that `success` can be `false`, and is, when the `key` doesn't exist.
+
+In that case, `quota`, `ttl` and `ttlType` will contain `invalid` values.
+
+#### UPDATE
+
+If you want to modify the `counter` value or TTL. Then `UPDATE` is for you.
+
+```java
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
+
+String KEY = "EXISTING_KEY";
+int VALUE = 5;
+AttributeType ATTRIBUTE_TYPE = AttributeType.QUOTA;
+ChangeType CHANGE_TYPE = ChangeType.DECREASE;
+
+StatusResponse response = service.send(
+    new UpdateRequest(
+        ATTRIBUTE_TYPE,
+        CHANGE_TYPE,
+        VALUE,
+        KEY
+    )
+);
+
+System.out.println("Status: " + response.success());
+```
+
+There are two attributes that can be modified `Quota` and `TTL`.
+
+There are three change type that can be invoked:
+
+- `PATCH` to replace the value.
+- `INCREASE` to extend the quota or increase the metric.
+- `DECREASE` to consume the quota or decrease the metric.
+
+There are two different cases that `success` can be `false`:
+
+- `Key` doesn't exists.
+- `Quota` is less than the value that want to be reduced. IE: Quota is 20, but you want to `DECREASE` 50.
+
+The last case is relevant because you can combine `INSERT` + `UPDATE` as pattern.
+
+#### PURGE
+
+If you want, manually, remove the `counter` or `buffer`. Then `PURGE` is for you.
+
+```java
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
+
+String KEY = "EXISTING_KEY";
+
+StatusResponse response = service.send(
+    new PurgeRequest(
+        KEY
+    )
+);
+
+System.out.println("Status: " + response.success());
+```
+
+There are only one condition that `success` can be `false`, and is, when the `key` doesn't exist.
+
+#### SET
+
+If you want, create a `buffer` (arbitrary data in memory). Then `SET` is for you.
+
+```java
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
+
+String KEY = "NON_EXISTING_KEY";
+String VALUE = "EHLO";
+int TTL = 24;
+TTLType TTL_TYPE = TTLType.HOURS;
+
+StatusResponse response = service.send(
+    new SetRequest(
+        TTL_TYPE,
+        TTL,
+        KEY,
+        VALUE
+    )
+);
+
+System.out.println("Status: " + response.success());
+```
+
+There are only one condition that `success` can be `false`, and is, when the `key` already exist.
+
+#### GET
+
+If you want, recover a `buffer`. Then `GET` is for you.
+
+```java
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
+
+String KEY = "EXISTING_KEY";
+
+GetResponse response = service.send(
+    new GetRequest(
+        KEY
+    )
+);
+
+System.out.println("Status: " + response.success());
+System.out.println("TTL Type: " + response.ttlType());
+System.out.println("TTL: " + response.ttl());
+System.out.println("Value: " + response.value());
+```
+
+There are only one condition that `success` can be `false`, and is, when the `key` doesn't exist.
+
+### Get Disconnected
+
+Once your operations has been finished, you could release resources using:
+
+```php
+service.close();
 ```
 
 See more examples in [tests](https://github.com/throttr/java/blob/master/src/test/java/cl/throttr/ServiceTest.java).
@@ -157,4 +242,4 @@ See more examples in [tests](https://github.com/throttr/java/blob/master/src/tes
 
 ## License
 
-Distributed under the [GNU Affero General Public License v3.0](https://github.com/throttr/java/blob/master/LICENSE).
+Distributed under the [GNU Affero General Public License v3.0](https://github.com/throttr/typescript/blob/master/LICENSE).
