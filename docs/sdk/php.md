@@ -189,7 +189,7 @@ See more examples in [tests](https://github.com/throttr/php/blob/master/tests/Se
 
 I will show you my recommended usages as previous requests are just raw protocol.
 
-### Optimize Rate Limiter
+### Optimized Rate Limiter
 
 Avoid the usage of `INSERT` and `UPDATE` as two separated requests. Call it as `batch`.
 

@@ -230,6 +230,54 @@ Once your operations has been finished, you could release resources using:
 service.close();
 ```
 
+## Advanced Usage
+
+I will show you my recommended usages as previous requests are just raw protocol.
+
+### Optimized Rate Limiter
+
+Avoid the usage of `INSERT` and `UPDATE` as two separated requests. Call it as `batch`.
+
+The `send` function also receives `List`. This reduces two TCP message to only one.
+
+This mechanism provides to you enough information to `allow` or `block` a request.
+
+```java
+import cl.throttr.enums.*;
+import cl.throttr.requests.*;
+import cl.throttr.responses.*;
+
+String KEY = "127.0.0.1:8000,GET,/api/user";
+int QUOTA = 5;
+int TTL = 60;
+TTLType TTL_TYPE = TTLType.SECONDS;
+AttributeType ATTRIBUTE_TYPE = AttributeType.QUOTA;
+ChangeType CHANGE_TYPE = ChangeType.DECREASE;
+int CONSUME = 1;
+
+List<StatusResponse> responses = service.send(
+    List.of(
+        new InsertRequest(
+            QUOTA,
+            TTL_TYPE,
+            TTL,
+            KEY
+        ),
+        new UpdateRequest(
+            ATTRIBUTE_TYPE,
+            CHANGE_TYPE,
+            CONSUME,
+            KEY
+        )
+    )
+);
+
+System.out.println("INSERT: " + responses.get(0).success());
+System.out.println("UPDATE: " + responses.get(1).success());
+```
+
+If `INSERT` was `success` then is the first consume time and if `UPDATE` was `success` then the user had available quota.
+
 See more examples in [tests](https://github.com/throttr/java/blob/master/src/test/java/cl/throttr/ServiceTest.java).
 
 ## Technical Notes

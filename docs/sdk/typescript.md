@@ -47,6 +47,39 @@ Requests **can fail**, mainly, for external causes. I/O, Network stability and s
 
 As `send` function returns a `Promise` then you could as you wish, using `await` or `then`.
 
+
+### Configuration
+
+Throttr SDK for TypeScript exposes several configuration options that can be passed to Service:
+
+#### Host
+
+Attribute `host` is the Throttr Server domain or IP. Usually `127.0.0.1` or `localhost`.
+
+#### Port
+
+Attribute `port` is the Throttr Server port. Usually is `9000`.
+
+#### Maximum connections
+
+Attribute `max_connections` is the number of connections from the beginning. Default is `1`.
+
+#### Value size
+
+Attribute `value_type` is the variant of Throttr Server. Default is `uint16`.
+
+#### Connection configuration
+
+Attribute `connection_configuration` is an object of `T<ConnectionConfiguration>`.
+
+##### Wait for writable socket attempts
+
+Attribute `on_wait_for_writable_socket_attempts` is the maximum attempts of waiting for writable socket. Default is `3`.
+
+##### Wait for writable socket timeout
+
+Attribute `on_wait_for_writable_socket_timeout_per_attempt` is the timeout used per attempt. Default is `1000` milliseconds.
+
 ### Sending Requests
 
 The following operations are based in Throttr protocol `v5.0.0`.
@@ -224,7 +257,7 @@ See more examples in [tests](https://github.com/throttr/typescript/blob/master/t
 
 I will show you my recommended usages as previous requests are just raw protocol.
 
-### Optimize Rate Limiter
+### Optimized Rate Limiter
 
 Avoid the usage of `INSERT` and `UPDATE` as two separated requests. Call it as `batch`.
 

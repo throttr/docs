@@ -11,7 +11,7 @@ export default defineUserConfig({
   theme: defaultTheme({
     logo: '/images/logo.png',
 
-    navbar: ['/', '/get-started', '/about-protocol'],
+    navbar: ['/', '/get-started', '/about-protocol', '/about-server'],
 
     sidebarDepth: 5,
   }),

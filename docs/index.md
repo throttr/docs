@@ -23,5 +23,3 @@ features:
 
 footer: AGPLv3 Licensed | Copyright © 2025-present Ian Torres
 ---
-
-[default-theme-home]: https://vuejs.press/reference/default-theme/frontmatter.html#home-page

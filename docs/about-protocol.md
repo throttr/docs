@@ -1,4 +1,4 @@
-# About Throttr Protocol
+# About Protocol
 
 ## Introduction
 
