@@ -844,37 +844,37 @@ The first `byte` must be `0x08`.
 This server resolve this request, initially, by sending `236 bytes` response.
 
 
-| Field                                     | Size       |
-|-------------------------------------------|------------|
-| 1. TIMESTAMP                              | `8 bytes`  |
-| 2. REQUEST PER SECONDS                    | `8 bytes`  |
-| 3. INSERT PER SECONDS                     | `8 bytes`  |
-| 4. QUERY PER SECONDS                      | `8 bytes`  |
-| 5. UPDATE PER SECONDS                     | `8 bytes`  |
-| 6. PURGE PER SECONDS                      | `8 bytes`  |
-| 7. GET PER SECONDS                        | `8 bytes`  |
-| 8. SET PER SECONDS                        | `8 bytes`  |
-| 9. LIST PER SECONDS                       | `8 bytes`  |
-| 10. INFO PER SECONDS                      | `8 bytes`  |
-| 11. STATS PER SECONDS                     | `8 bytes`  |
-| 12. STAT PER SECONDS                      | `8 bytes`  |
-| 13. SUBSCRIBE PER SECONDS                 | `8 bytes`  |
-| 14. UNSUBSCRIBE PER SECONDS               | `8 bytes`  |
-| 15. PUBLISH PER SECONDS                   | `8 bytes`  |
-| 16. HIGHEST PUBLISH PAYLOAD               | `8 bytes`  |
-| 17. AVERAGE PUBLISH PAYLOAD               | `8 bytes`  |
-| 18. IN BYTES PER SECONDS                  | `8 bytes`  |
-| 19. OUT BYTES PER SECONDS                 | `8 bytes`  |
-| 20. NUMBER OF KEYS                        | `8 bytes`  |
-| 21. NUMBER OF COUNTERS                    | `8 bytes`  |
-| 22. NUMBER OF BUFFERS                     | `8 bytes`  |
-| 23. NUMBER OF ALLOCATED BYTES ON COUNTERS | `8 bytes`  |
-| 24. NUMBER OF ALLOCATED BYTES ON BUFFERS  | `8 bytes`  |
-| 25. NUMBER OF CHANNELS                    | `8 bytes`  |
-| 26. NUMBER OF SUBSCRIPTIONS               | `8 bytes`  |
-| 27. RUNNING SINCE                         | `8 bytes`  |
-| 28. NUMBER OF CONNECTIONS                 | `4 bytes`  |
-| 29. VERSION                               | `16 bytes` |
+| Field                                 | Size       |
+|---------------------------------------|------------|
+| TIMESTAMP                             | `8 bytes`  |
+| REQUEST PER SECONDS                   | `8 bytes`  |
+| INSERT PER SECONDS                    | `8 bytes`  |
+| QUERY PER SECONDS                     | `8 bytes`  |
+| UPDATE PER SECONDS                    | `8 bytes`  |
+| PURGE PER SECONDS                     | `8 bytes`  |
+| GET PER SECONDS                       | `8 bytes`  |
+| SET PER SECONDS                       | `8 bytes`  |
+| LIST PER SECONDS                      | `8 bytes`  |
+| INFO PER SECONDS                      | `8 bytes`  |
+| STATS PER SECONDS                     | `8 bytes`  |
+| STAT PER SECONDS                      | `8 bytes`  |
+| SUBSCRIBE PER SECONDS                 | `8 bytes`  |
+| UNSUBSCRIBE PER SECONDS               | `8 bytes`  |
+| PUBLISH PER SECONDS                   | `8 bytes`  |
+| HIGHEST PUBLISH PAYLOAD               | `8 bytes`  |
+| AVERAGE PUBLISH PAYLOAD               | `8 bytes`  |
+| IN BYTES PER SECONDS                  | `8 bytes`  |
+| OUT BYTES PER SECONDS                 | `8 bytes`  |
+| NUMBER OF KEYS                        | `8 bytes`  |
+| NUMBER OF COUNTERS                    | `8 bytes`  |
+| NUMBER OF BUFFERS                     | `8 bytes`  |
+| NUMBER OF ALLOCATED BYTES ON COUNTERS | `8 bytes`  |
+| NUMBER OF ALLOCATED BYTES ON BUFFERS  | `8 bytes`  |
+| NUMBER OF CHANNELS                    | `8 bytes`  |
+| NUMBER OF SUBSCRIPTIONS               | `8 bytes`  |
+| RUNNING SINCE                         | `8 bytes`  |
+| NUMBER OF CONNECTIONS                 | `4 bytes`  |
+| VERSION                               | `16 bytes` |
 
 
 ### STAT
@@ -949,7 +949,6 @@ explain(response);
 == Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00      => 8          ==
 ===============================================================================
 ```
-
 
 ### STATS
 
@@ -1347,3 +1346,502 @@ explain(response);
 ```
 
 [official GitHub repository]: https://github.com/throttr/protocol
+
+### CONNECTIONS
+
+This request can list `connections`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x14`.
+
+#### Response
+
+This server resolve this request, initially, by sending `8 bytes` response.
+
+| Field              | Size      |
+|--------------------|-----------|
+| FRAGMENTS (P)      | `8 bytes` |
+
+After that we receive P fragments in `16 bytes`:
+
+| Field                            | Size      |
+|----------------------------------|-----------|
+| FRAGMENT                         | `8 bytes` |
+| NUMBER OF SCOPED CONNECTIONS (Q) | `8 bytes` |
+
+Per `Q` we are going to receive fixed `223 bytes`:
+
+| Field                | Size       |
+|----------------------|------------|
+| INDEX                | `4 bytes`  |
+| IP VERSION           | `1 byte`   |
+| IP                   | `16 bytes` |
+| PORT                 | `2 byte`   |
+| READ BYTES           | `8 bytes`  |
+| WRITE BYTES          | `8 bytes`  |
+| PUBLISHED BYTES      | `8 bytes`  |
+| RECEIVED BYTES       | `8 bytes`  |
+| ALLOCATED BYTES      | `8 bytes`  |
+| CONSUMED BYTES       | `8 bytes`  |
+| CONNECTED AT         | `8 bytes`  |
+| INSERT REQUESTS      | `8 bytes`  |
+| SET REQUESTS         | `8 bytes`  |
+| QUERY REQUESTS       | `8 bytes`  |
+| GET REQUESTS         | `8 bytes`  |
+| UPDATE REQUESTS      | `8 bytes`  |
+| PURGE REQUESTS       | `8 bytes`  |
+| LIST REQUESTS        | `8 bytes`  |
+| INFO REQUESTS        | `8 bytes`  |
+| STAT REQUESTS        | `8 bytes`  |
+| STATS REQUESTS       | `8 bytes`  |
+| SUBSCRIBE REQUESTS   | `8 bytes`  |
+| UNSUBSCRIBE REQUESTS | `8 bytes`  |
+| PUBLISH REQUESTS     | `8 bytes`  |
+| CONNECTIONS REQUESTS | `8 bytes`  |
+| CONNECTION REQUESTS  | `8 bytes`  |
+| CHANNELS REQUESTS    | `8 bytes`  |
+| CHANNEL REQUESTS     | `8 bytes`  |
+| WHOAMI REQUESTS      | `8 bytes`  |
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x14
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+==================
+== Buffer: 0x14 ==
+==================
+
+===================================================
+== Request Type: 0x14      => CONNECTIONS        ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(8)
+
+// Explain the head response ...
+explain(response);
+
+=====================================================
+== Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
+=====================================================
+
+=============================================================
+== Fragments: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 => 1 ==
+=============================================================
+
+for P = response.fragments; P != 0; P--
+
+  set fragment_response = socket.recv(16)
+  
+  explain(fragment_response)
+   
+  ===============================================================================
+  == Fragment: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00                    => 1 ==
+  == N of Scoped Connections: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 1 ==
+  ===============================================================================
+
+  set connections_response = socket.recv(fragment_response.keys * 223)
+  
+  explain(connections_response)
+  
+  =====================
+  == Connection N° 1 ==
+  =================================================================================================================
+  == Index: 0x01 0x00 0x00 0x00                                                           => 1                   ==
+  == IP version: 0x04                                                                     => ipv4                ==
+  == IP: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 0.0.0.0             ==
+  == Port: 0x28 0x23                                                                      => 9000                ==
+  == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                  => 0                   ==
+  == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                 => 0                   ==
+  == Published Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Received Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Allocated Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Consumed Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Connected At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
+  == Insert Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Set Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
+  == Query Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Get Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
+  == Update Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Purge Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == List Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
+  == Info Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
+  == Stat Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
+  == Stats Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Subscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                          => 0                   ==
+  == Unsubscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
+  == Publish Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
+  == Connections Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
+  == Connection Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                         => 0                   ==
+  == Channels Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                           => 0                   ==
+  == Channel Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
+  == Whoami Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  =================================================================================================================
+```
+
+
+### CONNECTION
+
+This request can retrieve metadata about specific `connection`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x15`.
+
+##### Connection index
+
+The index contained in `4 bytes`.
+
+#### Response
+
+This server resolve this request, initially, by sending `1 byte` response.
+
+If `index` exists then will also include fixed `223 bytes`:
+
+| Field                | Size       |
+|----------------------|------------|
+| INDEX                | `4 bytes`  |
+| IP VERSION           | `1 byte`   |
+| IP                   | `16 bytes` |
+| PORT                 | `2 byte`   |
+| READ BYTES           | `8 bytes`  |
+| WRITE BYTES          | `8 bytes`  |
+| PUBLISHED BYTES      | `8 bytes`  |
+| RECEIVED BYTES       | `8 bytes`  |
+| ALLOCATED BYTES      | `8 bytes`  |
+| CONSUMED BYTES       | `8 bytes`  |
+| CONNECTED AT         | `8 bytes`  |
+| INSERT REQUESTS      | `8 bytes`  |
+| SET REQUESTS         | `8 bytes`  |
+| QUERY REQUESTS       | `8 bytes`  |
+| GET REQUESTS         | `8 bytes`  |
+| UPDATE REQUESTS      | `8 bytes`  |
+| PURGE REQUESTS       | `8 bytes`  |
+| LIST REQUESTS        | `8 bytes`  |
+| INFO REQUESTS        | `8 bytes`  |
+| STAT REQUESTS        | `8 bytes`  |
+| STATS REQUESTS       | `8 bytes`  |
+| SUBSCRIBE REQUESTS   | `8 bytes`  |
+| UNSUBSCRIBE REQUESTS | `8 bytes`  |
+| PUBLISH REQUESTS     | `8 bytes`  |
+| CONNECTIONS REQUESTS | `8 bytes`  |
+| CONNECTION REQUESTS  | `8 bytes`  |
+| CHANNELS REQUESTS    | `8 bytes`  |
+| CHANNEL REQUESTS     | `8 bytes`  |
+| WHOAMI REQUESTS      | `8 bytes`  |
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x15
+  0x01 0x00 0x00 0x00
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+==================
+== Buffer: 0x15 0x01 0x00 0x00 0x00 ==
+==================
+
+==================================================================
+== Request Type: 0x15                     => CONNECTIONS        ==
+== Request Type: 0x01 0x00 0x00 0x00      => INDEX              ==
+==================================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(1)
+
+
+if response.success
+
+  set connection_response = socket.recv(223)
+
+  explain(connection_response)
+  
+  ================
+  == Connection ==
+  =================================================================================================================
+  == Index: 0x01 0x00 0x00 0x00                                                           => 1                   ==
+  == IP version: 0x04                                                                     => ipv4                ==
+  == IP: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 0.0.0.0             ==
+  == Port: 0x28 0x23                                                                      => 9000                ==
+  == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                  => 0                   ==
+  == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                 => 0                   ==
+  == Published Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Received Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Allocated Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Consumed Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Connected At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
+  == Insert Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Set Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
+  == Query Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Get Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
+  == Update Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  == Purge Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == List Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
+  == Info Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
+  == Stat Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
+  == Stats Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
+  == Subscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                          => 0                   ==
+  == Unsubscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
+  == Publish Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
+  == Connections Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
+  == Connection Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                         => 0                   ==
+  == Channels Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                           => 0                   ==
+  == Channel Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
+  == Whoami Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
+  =================================================================================================================
+```
+
+### CHANNELS
+
+This request can list `channels`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x16`.
+
+#### Response
+
+This server resolve this request, initially, by sending `8 bytes` response.
+
+| Field              | Size      |
+|--------------------|-----------|
+| FRAGMENTS (P)      | `8 bytes` |
+
+After that we receive P fragments in `16 bytes`:
+
+| Field                         | Size      |
+|-------------------------------|-----------|
+| FRAGMENT                      | `8 bytes` |
+| NUMBER OF SCOPED CHANNELS (Q) | `8 bytes` |
+
+Per `Q` we are going to receive fixed `21 bytes`:
+
+| Field                  | Size      |
+|------------------------|-----------|
+| CHANNEL SIZE (QL)      | `1 byte`  |
+| READ BYTES             | `8 bytes` |
+| WRITE BYTES            | `8 bytes` |
+| SUBSCRIBED CONNECTIONS | `4 bytes` |
+
+At the end of the fragment we are going receive the keys in `R bytes` (sum of `QL`):
+
+| Field   | Size       |
+|---------|------------|
+| CHANNEL | `QL bytes` |
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x16
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+==================
+== Buffer: 0x16 ==
+==================
+
+===================================================
+== Request Type: 0x16      => CHANNELS           ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(8)
+
+// Explain the head response ...
+explain(response);
+
+=====================================================
+== Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
+=====================================================
+
+=============================================================
+== Fragments: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 => 1 ==
+=============================================================
+
+for P = response.fragments; P != 0; P--
+
+  set fragment_response = socket.recv(16)
+  
+  explain(fragment_response)
+   
+  ===============================================================================
+  == Fragment: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00                    => 1 ==
+  == N of Scoped Channels: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 1 ==
+  ===============================================================================
+
+  set channels_response = socket.recv(fragment_response.keys * 21)
+  
+  explain(channels_response)
+  
+  =====================
+  == Channel N° 1 ==
+  ===========================================================================
+  == Size of Channel: 0x03                                   => 3          ==
+  == Read Bytes: 0x05 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 5 bytes    ==
+  == Write Bytes: 0x07 0x00 0x00 0x00 0x00 0x00 0x00 0x00    => 7 bytes    ==
+  == Subscribed Connections: 0x03 0x00 0x00 0x00             => 3          ==
+  ===========================================================================
+  
+  set pending_bytes = 0;
+
+  for each channels_response.items as item
+  
+    set channel_response = socket.recv(item.size_of_channel)
+    
+    explain(channel_response)
+
+    ============================
+    == Buffer: 0x61 0x62 0x63 ==
+    ============================
+    
+    ==================
+    == Channel N° 1 ==
+    ================================
+    == Key: 0x61 0x62 0x63 => abc ==
+    ================================
+```
+
+
+### CHANNEL
+
+This request can provide metrics for specific `channel`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x17`.
+
+##### Size of channel
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+##### Channel
+
+Is the channel name. Contained in `M bytes`.
+
+#### Response
+
+This server resolve this request by sending `1 byte` response.
+
+If the byte is `0x01` then will also include `4 bytes` more:
+
+| Field                     | Size      |
+|---------------------------|-----------|
+| NUMBER OF SUBSCRIBERS (Q) | `4 bytes` |
+
+Per `Q` we need to read `28 bytes`:
+
+| Field            | Size      |
+|------------------|-----------|
+| CONNECTION INDEX | `4 bytes` |
+| SUBSCRIBED_AT    | `8 bytes` |
+| READ BYTES       | `8 bytes` |
+| WRITE BYTES      | `8 bytes` |
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x17 0x05 0x07 0x07 0x07 0x07 0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+================================================
+== Buffer: 0x17 0x05 0x07 0x07 0x07 0x07 0x07 ==
+================================================
+
+===================================================
+== Request Type: 0x17             => CHANNEL     ==
+== Length(Channel): 0x05          => 5           ==
+== Key: 0x07 0x07 0x07 0x07 0x07  => bytes       ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(4)
+
+// Explain the head response ...
+explain(response);
+
+===============================================================
+== Status: 0x01                                => success    ==
+== Number of Connections: 0x01 0x00 0x00 0x00  => 1          ==
+===============================================================
+
+for P = response.number_of_connections; P != 0; P--
+  
+    set channel_response = socket.recv(28)
+    
+    explain(channel_response)
+    
+    =====================================================================================
+    == Connection Index: 0x01 0x00 0x00 0x00                      => Connection #1     ==
+    == Subscribed At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 0                 ==
+    == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 0                 ==
+    == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 0                 ==
+    =====================================================================================
+```
+
+### WHOAMI
+
+This request can provide the index of the current connection.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x18`.
+
+#### Response
+
+This server resolve this request, by sending the connection index in `4 bytes`.
