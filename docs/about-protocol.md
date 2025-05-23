@@ -834,4 +834,51 @@ for P = response.fragments; P != 0; P--
     ======================================
 ```
 
+### INFO
+
+This request can provide instance related information.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x08`.
+
+#### Response
+
+This server resolve this request, initially, by sending `236 bytes` response.
+
+
+| Field                                     | Size       |
+|-------------------------------------------|------------|
+| 1. TIMESTAMP                              | `8 bytes`  |
+| 2. REQUEST PER SECONDS                    | `8 bytes`  |
+| 3. INSERT PER SECONDS                     | `8 bytes`  |
+| 4. QUERY PER SECONDS                      | `8 bytes`  |
+| 5. UPDATE PER SECONDS                     | `8 bytes`  |
+| 6. PURGE PER SECONDS                      | `8 bytes`  |
+| 7. GET PER SECONDS                        | `8 bytes`  |
+| 8. SET PER SECONDS                        | `8 bytes`  |
+| 9. LIST PER SECONDS                       | `8 bytes`  |
+| 10. INFO PER SECONDS                      | `8 bytes`  |
+| 11. STATS PER SECONDS                     | `8 bytes`  |
+| 12. STAT PER SECONDS                      | `8 bytes`  |
+| 13. SUBSCRIBE PER SECONDS                 | `8 bytes`  |
+| 14. UNSUBSCRIBE PER SECONDS               | `8 bytes`  |
+| 15. PUBLISH PER SECONDS                   | `8 bytes`  |
+| 16. HIGHEST PUBLISH PAYLOAD               | `8 bytes`  |
+| 17. AVERAGE PUBLISH PAYLOAD               | `8 bytes`  |
+| 18. IN BYTES PER SECONDS                  | `8 bytes`  |
+| 19. OUT BYTES PER SECONDS                 | `8 bytes`  |
+| 20. NUMBER OF KEYS                        | `8 bytes`  |
+| 21. NUMBER OF COUNTERS                    | `8 bytes`  |
+| 22. NUMBER OF BUFFERS                     | `8 bytes`  |
+| 23. NUMBER OF ALLOCATED BYTES ON COUNTERS | `8 bytes`  |
+| 24. NUMBER OF ALLOCATED BYTES ON BUFFERS  | `8 bytes`  |
+| 25. NUMBER OF CHANNELS                    | `8 bytes`  |
+| 26. NUMBER OF SUBSCRIPTIONS               | `8 bytes`  |
+| 27. RUNNING SINCE                         | `8 bytes`  |
+| 28. NUMBER OF CONNECTIONS                 | `4 bytes`  |
+| 29. VERSION                               | `16 bytes` |
+
 [official GitHub repository]: https://github.com/throttr/protocol
