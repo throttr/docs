@@ -75,7 +75,7 @@ The dynamic size (`N`) is the variable quantity of bytes who are used on dynamic
 
 ### Endianness
 
-The endianness is the way how multi-byte data is stored in memory.
+The endianness is the way how multibyte data is stored in memory.
 
 **Big Endian** stores the most significant byte first, meaning the highest-order byte comes at the lowest memory address.
 
@@ -94,7 +94,7 @@ Usually, standards of `IETF`, `IEEE` and `ISO` recommend `big endian`. This prot
 
 ## Request types
 
-Version `v5.0.0` supports the following request types:
+Version `v6.0.0` supports the following request types:
 
 ### INSERT
 
@@ -675,6 +675,163 @@ Buffer: 0x01 0x04 0x03 0x00 0x04 0x00 0x45 0x48 0x4C 0x4F
 =====================================
 == Status: 0x00         => failed  ==
 =====================================
+```
+
+### LIST
+
+This request can list `counters` and `buffers`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x07`.
+
+#### Response
+
+This server resolve this request, initially, by sending `8 bytes` response.
+
+
+| Field              | Size      |
+|--------------------|-----------|
+| FRAGMENTS (P)      | `8 bytes` |
+
+After that we receive P fragments in `16 bytes`:
+
+| Field                     | Size      |
+|---------------------------|-----------|
+| FRAGMENT                  | `8 bytes` |
+| NUMBER OF SCOPED KEYS (Q) | `8 bytes` |
+
+Per `Q` we are going to receive fixed `11 bytes`:
+
+| Field         | Size      |
+|---------------|-----------|
+| KEY SIZE (QL) | `1 byte`  |
+| KEY TYPE      | `1 byte`  |
+| TTL TYPE      | `1 byte`  |
+| TIME POINT    | `8 bytes` |
+
+> `N` represent `value_type` length.
+
+At the end of the fragment we are going receive the keys in `R bytes` (sum of `QL`):
+
+| Field      | Size       |
+|------------|------------|
+| KEY        | `QL bytes` |
+
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+==================
+== Buffer: 0x07 ==
+==================
+
+===================================================
+== Request Type: 0x07             => LIST        ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(8)
+
+// Explain the head response ...
+explain(response);
+
+=====================================================
+== Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
+=====================================================
+
+=============================================================
+== Fragments: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 => 1 ==
+=============================================================
+
+for P = response.fragments; P != 0; P--
+
+  set fragment_response = socket.recv(16)
+  
+  explain(fragment_response)
+   
+  =============================================================================================
+  == Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
+  =============================================================================================
+  
+  ========================================================================
+  == Fragment: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00             => 1 ==
+  == N of Scoped Keys: 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 2 ==
+  ========================================================================
+
+  set keys_response = socket.recv(fragment_response.keys * 11)
+  
+  explain(keys_response)
+  
+  ===========================================================================================================================
+  == Buffer: 0x03 0x00 0x04 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18 0x04 0x01 0x04 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18 ==
+  ===========================================================================================================================
+  
+  ==============
+  == Key N° 1 ==
+  ===================================================================================
+  == Size Of Key: 0x03                                      => 3                   ==
+  == Key Type: 0x00                                         => counter             ==
+  == TTL Type: 0x04                                         => seconds             ==
+  == Time Point: 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18    => 1747986087165768960 ==
+  ===================================================================================
+  
+  ==============
+  == Key N° 2 ==
+  ===================================================================================
+  == Size Of Key: 0x04                                      => 4                   ==
+  == Key Type: 0x01                                         => buffer              ==
+  == TTL Type: 0x04                                         => seconds             ==
+  == Time Point: 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18    => 1747986087165768960 ==
+  ===================================================================================
+
+  set pending_bytes = 0;
+
+  for each keys_response.items as item
+  
+    set key_response = socket.recv(item.size_of_key)
+    
+    explain(key_response)
+
+    // 1st iteration:
+
+    ============================
+    == Buffer: 0x61 0x62 0x63 ==
+    ============================
+    
+    ==============
+    == Key N° 1 ==
+    ================================
+    == Key: 0x61 0x62 0x63 => abc ==
+    ================================
+    
+    // 2nd iteration: 
+    
+    =================================
+    == Buffer: 0x45 0x48 0x4C 0x4F ==
+    =================================
+    
+    ==============
+    == Key N° 2 ==
+    ======================================
+    == Key: 0x45 0x48 0x4C 0x4F => EHLO ==
+    ======================================
 ```
 
 [official GitHub repository]: https://github.com/throttr/protocol
