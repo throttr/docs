@@ -26,16 +26,16 @@ This is the most easy and fast way to get
 // For Quotas/TTL and Buffers
 
 // Upto 255
-docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint8
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.17-debug-uint8
 
 // Upto 65.535
-docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint16
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.17-debug-uint16
 
 // Upto 4.294.967.295
-docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint32
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.17-debug-uint32
 
 // Upto 2^64 - 1
-docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.14-debug-uint64
+docker run -p 9000:9000 ghcr.io/throttr/throttr:4.0.17-debug-uint64
 ```
 
 ### Building from Source
@@ -121,12 +121,15 @@ We have the following SDK's available:
 | [SDK for TypeScript][] | [TS: Read the docs][]   |
 | [SDK for PHP][]        | [PHP: Read the docs][]  |
 | [SDK for Java][]       | [Java: Read the docs][] |
+| [SDK for C++][]        | [C++: Read the docs][]  |
 
 
 [Throttr Server Repository]: https://github.com/throttr/throttr
 [SDK for TypeScript]: https://github.com/throttr/typescript
 [SDK for PHP]: https://github.com/throttr/php
 [SDK for Java]: https://github.com/throttr/java
+[SDK for C++]: https://github.com/throttr/cpp
 [TS: Read the docs]: ./sdk/typescript.md
 [PHP: Read the docs]: ./sdk/php.md
 [Java: Read the docs]: ./sdk/java.md
+[C++: Read the docs]: ./sdk/cpp.md

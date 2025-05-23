@@ -8,7 +8,7 @@ Add the dependency to your `pom.xml`:
 <dependency>
     <groupId>cl.throttr</groupId>
     <artifactId>sdk</artifactId>
-    <version>4.0.0</version>
+    <version>4.1.1</version>
 </dependency>
 ```
 
@@ -284,7 +284,7 @@ See more examples in [tests](https://github.com/throttr/java/blob/master/src/tes
 
 - The protocol assumes Little Endian architecture.
 - The internal message queue ensures requests are processed sequentially.
-- The package is defined to works with protocol 4.0.14 or greatest.
+- The package is defined to works with protocol 4.0.17 or greatest.
 
 ---
 
