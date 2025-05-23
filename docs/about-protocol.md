@@ -703,7 +703,7 @@ After that we receive P fragments in `16 bytes`:
 | FRAGMENT                  | `8 bytes` |
 | NUMBER OF SCOPED KEYS (Q) | `8 bytes` |
 
-Per `Q` we are going to receive fixed `11 bytes`:
+Per `Q` we are going to receive fixed `11 + N bytes`:
 
 | Field         | Size      |
 |---------------|-----------|
@@ -711,6 +711,7 @@ Per `Q` we are going to receive fixed `11 bytes`:
 | KEY TYPE      | `1 byte`  |
 | TTL TYPE      | `1 byte`  |
 | TIME POINT    | `8 bytes` |
+| BYTES USED    | `N bytes` |
 
 > `N` represent `value_type` length.
 
@@ -766,10 +767,6 @@ for P = response.fragments; P != 0; P--
   
   explain(fragment_response)
    
-  =============================================================================================
-  == Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
-  =============================================================================================
-  
   ========================================================================
   == Fragment: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00             => 1 ==
   == N of Scoped Keys: 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 2 ==
@@ -779,10 +776,6 @@ for P = response.fragments; P != 0; P--
   
   explain(keys_response)
   
-  ===========================================================================================================================
-  == Buffer: 0x03 0x00 0x04 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18 0x04 0x01 0x04 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18 ==
-  ===========================================================================================================================
-  
   ==============
   == Key N° 1 ==
   ===================================================================================
@@ -790,6 +783,7 @@ for P = response.fragments; P != 0; P--
   == Key Type: 0x00                                         => counter             ==
   == TTL Type: 0x04                                         => seconds             ==
   == Time Point: 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18    => 1747986087165768960 ==
+  == Bytes Used: 0x04 0x00                                  => 4 bytes             ==
   ===================================================================================
   
   ==============
@@ -799,6 +793,7 @@ for P = response.fragments; P != 0; P--
   == Key Type: 0x01                                         => buffer              ==
   == TTL Type: 0x04                                         => seconds             ==
   == Time Point: 0x00 0x35 0xD7 0xC5 0x15 0x18 0x42 0x18    => 1747986087165768960 ==
+  == Bytes Used: 0x08 0x00                                  => 8 bytes             ==
   ===================================================================================
 
   set pending_bytes = 0;
@@ -912,7 +907,6 @@ If the byte is `0x01` then will also include `32 bytes` more:
 | UPDATE PER SECOND    | `8 bytes` |
 | TOTAL QUERIES        | `8 bytes` |
 | TOTAL UPDATES        | `8 bytes` |
-
 
 #### How to use
 
@@ -1111,6 +1105,245 @@ for P = response.fragments; P != 0; P--
     ======================================
     == Key: 0x45 0x48 0x4C 0x4F => EHLO ==
     ======================================
+```
+
+### SUBSCRIBE
+
+This request can start a subscription to a `channel`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x11`.
+
+##### Size of channel
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+##### Channel
+
+Is the name of the channel. Contained in `M bytes`.
+
+#### Response
+
+This server resolve this request by sending `1 byte` response.
+
+The client will receive `0x01` on success or `0x00` on failure.
+
+#### How to use
+
+```Algorithm
+// Built the buffer.
+set buffer = [
+  0x11
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+================================================
+== Buffer: 0x11 0x05 0x07 0x07 0x07 0x07 0x07 ==
+================================================
+
+===================================================
+== Request Type: 0x11             => SUBSCRIBE   ==
+== Length(Key): 0x05              => 5           ==
+== Key: 0x07 0x07 0x07 0x07 0x07  => bytes       ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv()
+
+// Explain the response ...
+explain(response);
+
+// If the client was subscribed ...
+
+==================
+== Buffer: 0x01 ==
+==================
+
+=====================================
+== Status: 0x01         => success ==
+=====================================
+
+// Otherwise ...
+
+==================
+== Buffer: 0x00 ==
+==================
+
+=====================================
+== Status: 0x00         => failed  ==
+=====================================
+```
+
+### UNSUBSCRIBE
+
+This request can finish a subscription to a `channel`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x12`.
+
+##### Size of channel
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+##### Channel
+
+Is the name of the channel. Contained in `M bytes`.
+
+#### Response
+
+This server resolve this request by sending `1 byte` response.
+
+The client will receive `0x01` on success or `0x00` on failure.
+
+#### How to use
+
+```Algorithm
+// Built the buffer.
+set buffer = [
+  0x12
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+================================================
+== Buffer: 0x12 0x05 0x07 0x07 0x07 0x07 0x07 ==
+================================================
+
+===================================================
+== Request Type: 0x12             => UNSUBSCRIBE ==
+== Length(Key): 0x05              => 5           ==
+== Key: 0x07 0x07 0x07 0x07 0x07  => bytes       ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv()
+
+// Explain the response ...
+explain(response);
+
+// If the client was unsubscribed ...
+
+==================
+== Buffer: 0x01 ==
+==================
+
+=====================================
+== Status: 0x01         => success ==
+=====================================
+
+// Otherwise ...
+
+==================
+== Buffer: 0x00 ==
+==================
+
+=====================================
+== Status: 0x00         => failed  ==
+=====================================
+```
+
+### PUBLISH
+
+This request can send a buffer to a subscribed `channel`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x13`.
+
+##### Size of channel
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+##### Size of payload
+
+Is the quantity of chars (`O`) used by the payload. Contained in `N bytes`.
+
+##### Channel
+
+Is the name of the channel. Contained in `M bytes`.
+
+##### Payload
+
+Is the payload. Contained in `O bytes`.
+
+#### Response
+
+This server resolve this request by sending `1 byte` response.
+
+The client will receive `0x01` on success or `0x00` on failure.
+
+#### How to use
+
+```Algorithm
+// Built the buffer.
+set buffer = [
+  0x13
+  0x05 
+  0x07 0x07 0x07 0x07 0x07
+  0x05 
+  0x03 0x03 0x03 0x03 0x03
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+=======================================================
+== Request Type: 0x13                 => PUBLISH     ==
+== Length(Key): 0x05                  => 5           ==
+== Length(Payload): 0x05              => 5           ==
+== Key: 0x07 0x07 0x07 0x07 0x07      => bytes       ==
+== Payload: 0x03 0x03 0x03 0x03 0x03  => bytes       ==
+=======================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv()
+
+// Explain the response ...
+explain(response);
+
+// If the message was published ...
+
+==================
+== Buffer: 0x01 ==
+==================
+
+=====================================
+== Status: 0x01         => success ==
+=====================================
+
+// Otherwise ...
+
+==================
+== Buffer: 0x00 ==
+==================
+
+=====================================
+== Status: 0x00         => failed  ==
+=====================================
 ```
 
 [official GitHub repository]: https://github.com/throttr/protocol
