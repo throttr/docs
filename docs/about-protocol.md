@@ -882,6 +882,81 @@ This server resolve this request, initially, by sending `236 bytes` response.
 | 29. VERSION                               | `16 bytes` |
 
 
+### STAT
+
+This request can provide metrics for specific `counter` or `buffer`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x09`.
+
+##### Size of key
+
+Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
+
+##### Key
+
+Is the key of the record. Contained in `M bytes`.
+
+#### Response
+
+This server resolve this request by sending `1 byte` response.
+
+If the byte is `0x01` then will also include `32 bytes` more:
+
+| Field                | Size      |
+|----------------------|-----------|
+| QUERY/GET PER SECOND | `8 bytes` |
+| UPDATE PER SECOND    | `8 bytes` |
+| TOTAL QUERIES        | `8 bytes` |
+| TOTAL UPDATES        | `8 bytes` |
+
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x09 0x05 0x07 0x07 0x07 0x07 0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+================================================
+== Buffer: 0x09 0x05 0x07 0x07 0x07 0x07 0x07 ==
+================================================
+
+===================================================
+== Request Type: 0x09             => STAT        ==
+== Length(Key): 0x05              => 5           ==
+== Key: 0x07 0x07 0x07 0x07 0x07  => bytes       ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(33)
+
+// Explain the head response ...
+explain(response);
+
+===============================================================================
+== Status: 0x01                                                => success    ==
+== Queries Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 => 1          ==
+== Update Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 1          ==
+== Total Queries: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00      => 9          ==
+== Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00      => 8          ==
+===============================================================================
+```
+
+
 ### STATS
 
 This request can provide metrics of `counters` and `buffers`.
@@ -890,7 +965,7 @@ This request can provide metrics of `counters` and `buffers`.
 
 ##### Request type
 
-The first `byte` must be `0x07`.
+The first `byte` must be `0x10`.
 
 #### Response
 
@@ -935,18 +1010,18 @@ using size uint16;
 
 // Built the buffer.
 set buffer = [
-  0x07
+  0x10
 ];
 
 // Explain the buffer ...
 explain(buffer);
 
 ==================
-== Buffer: 0x07 ==
+== Buffer: 0x10 ==
 ==================
 
 ===================================================
-== Request Type: 0x07             => LIST        ==
+== Request Type: 0x10             => STATS       ==
 ===================================================
 
 // Write on socket.
