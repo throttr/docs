@@ -881,4 +881,161 @@ This server resolve this request, initially, by sending `236 bytes` response.
 | 28. NUMBER OF CONNECTIONS                 | `4 bytes`  |
 | 29. VERSION                               | `16 bytes` |
 
+
+### STATS
+
+This request can provide metrics of `counters` and `buffers`.
+
+#### Required fields
+
+##### Request type
+
+The first `byte` must be `0x07`.
+
+#### Response
+
+This server resolve this request, initially, by sending `8 bytes` response.
+
+
+| Field              | Size      |
+|--------------------|-----------|
+| FRAGMENTS (P)      | `8 bytes` |
+
+After that we receive P fragments in `16 bytes`:
+
+| Field                     | Size      |
+|---------------------------|-----------|
+| FRAGMENT                  | `8 bytes` |
+| NUMBER OF SCOPED KEYS (Q) | `8 bytes` |
+
+Per `Q` we are going to receive fixed `33 bytes`:
+
+| Field                | Size      |
+|----------------------|-----------|
+| KEY SIZE (QL)        | `1 byte`  |
+| QUERY/GET PER SECOND | `8 bytes` |
+| UPDATE PER SECOND    | `8 bytes` |
+| TOTAL QUERIES        | `8 bytes` |
+| TOTAL UPDATES        | `8 bytes` |
+
+> `N` represent `value_type` length.
+
+At the end of the fragment we are going receive the keys in `R bytes` (sum of `QL`):
+
+| Field      | Size       |
+|------------|------------|
+| KEY        | `QL bytes` |
+
+
+#### How to use
+
+```Algorithm
+// Define the uint16 as dynamic size.
+using size uint16;
+
+// Built the buffer.
+set buffer = [
+  0x07
+];
+
+// Explain the buffer ...
+explain(buffer);
+
+==================
+== Buffer: 0x07 ==
+==================
+
+===================================================
+== Request Type: 0x07             => LIST        ==
+===================================================
+
+// Write on socket.
+socket.send(buffer);
+
+// Read from socket.
+set response = socket.recv(8)
+
+// Explain the head response ...
+explain(response);
+
+=====================================================
+== Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
+=====================================================
+
+=============================================================
+== Fragments: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 => 1 ==
+=============================================================
+
+for P = response.fragments; P != 0; P--
+
+  set fragment_response = socket.recv(16)
+  
+  explain(fragment_response)
+   
+  =============================================================================================
+  == Buffer: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00 ==
+  =============================================================================================
+  
+  ========================================================================
+  == Fragment: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00             => 1 ==
+  == N of Scoped Keys: 0x02 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 2 ==
+  ========================================================================
+
+  set keys_response = socket.recv(fragment_response.keys * 33)
+  
+  explain(keys_response)
+    
+  ==============
+  == Key N° 1 ==
+  ===============================================================================
+  == Size Of Key: 0x03                                                 => 3    ==
+  == Queries Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 1    ==
+  == Update Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 1    ==
+  == Total Queries: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 9    ==
+  == Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 8    ==
+  ===============================================================================
+  
+  ==============
+  == Key N° 2 ==
+  ===============================================================================
+  == Size Of Key: 0x04                                                 => 4    ==
+  == Queries Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 1    ==
+  == Update Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 1    ==
+  == Total Queries: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 9    ==
+  == Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 8    ==
+  ===============================================================================
+
+  set pending_bytes = 0;
+
+  for each keys_response.items as item
+  
+    set key_response = socket.recv(item.size_of_key)
+    
+    explain(key_response)
+
+    // 1st iteration:
+
+    ============================
+    == Buffer: 0x61 0x62 0x63 ==
+    ============================
+    
+    ==============
+    == Key N° 1 ==
+    ================================
+    == Key: 0x61 0x62 0x63 => abc ==
+    ================================
+    
+    // 2nd iteration: 
+    
+    =================================
+    == Buffer: 0x45 0x48 0x4C 0x4F ==
+    =================================
+    
+    ==============
+    == Key N° 2 ==
+    ======================================
+    == Key: 0x45 0x48 0x4C 0x4F => EHLO ==
+    ======================================
+```
+
 [official GitHub repository]: https://github.com/throttr/protocol
