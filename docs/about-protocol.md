@@ -901,12 +901,12 @@ This server resolve this request by sending `1 byte` response.
 
 If the byte is `0x01` then will also include `32 bytes` more:
 
-| Field                | Size      |
-|----------------------|-----------|
-| QUERY/GET PER SECOND | `8 bytes` |
-| UPDATE PER SECOND    | `8 bytes` |
-| TOTAL QUERIES        | `8 bytes` |
-| TOTAL UPDATES        | `8 bytes` |
+| Field             | Size      |
+|-------------------|-----------|
+| READS PER SECOND  | `8 bytes` |
+| WRITES PER SECOND | `8 bytes` |
+| TOTAL READS       | `8 bytes` |
+| TOTAL WRITES      | `8 bytes` |
 
 #### How to use
 
@@ -943,10 +943,10 @@ explain(response);
 
 ===============================================================================
 == Status: 0x01                                                => success    ==
-== Queries Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00 => 1          ==
-== Update Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 1          ==
-== Total Queries: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00      => 9          ==
-== Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00      => 8          ==
+== Reads Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00   => 1          ==
+== Writes Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 1          ==
+== Total Reads: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 9          ==
+== Total Writes: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 8          ==
 ===============================================================================
 ```
 
@@ -978,13 +978,13 @@ After that we receive P fragments in `16 bytes`:
 
 Per `Q` we are going to receive fixed `33 bytes`:
 
-| Field                | Size      |
-|----------------------|-----------|
-| KEY SIZE (QL)        | `1 byte`  |
-| QUERY/GET PER SECOND | `8 bytes` |
-| UPDATE PER SECOND    | `8 bytes` |
-| TOTAL QUERIES        | `8 bytes` |
-| TOTAL UPDATES        | `8 bytes` |
+| Field             | Size      |
+|-------------------|-----------|
+| KEY SIZE (QL)     | `1 byte`  |
+| READS PER SECOND  | `8 bytes` |
+| WRITES PER SECOND | `8 bytes` |
+| TOTAL READS       | `8 bytes` |
+| TOTAL WRITES      | `8 bytes` |
 
 > `N` represent `value_type` length.
 
@@ -1057,20 +1057,20 @@ for P = response.fragments; P != 0; P--
   == Key N° 1 ==
   ===============================================================================
   == Size Of Key: 0x03                                                 => 3    ==
-  == Queries Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 1    ==
-  == Update Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 1    ==
-  == Total Queries: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 9    ==
-  == Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 8    ==
+  == Reads Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00         => 1    ==
+  == Writes Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 1    ==
+  == Total Reads: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00              => 9    ==
+  == Total Writes: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00             => 8    ==
   ===============================================================================
   
   ==============
   == Key N° 2 ==
   ===============================================================================
   == Size Of Key: 0x04                                                 => 4    ==
-  == Queries Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 1    ==
-  == Update Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 1    ==
-  == Total Queries: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 9    ==
-  == Total Updates: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00            => 8    ==
+  == Reads Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00         => 1    ==
+  == Writes Per Second: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 1    ==
+  == Total Reads: 0x09 0x00 0x00 0x00 0x00 0x00 0x00 0x00              => 9    ==
+  == Total Writes: 0x08 0x00 0x00 0x00 0x00 0x00 0x00 0x00             => 8    ==
   ===============================================================================
 
   set pending_bytes = 0;
@@ -1372,11 +1372,11 @@ After that we receive P fragments in `16 bytes`:
 | FRAGMENT                         | `8 bytes` |
 | NUMBER OF SCOPED CONNECTIONS (Q) | `8 bytes` |
 
-Per `Q` we are going to receive fixed `223 bytes`:
+Per `Q` we are going to receive fixed `235 bytes`:
 
 | Field                | Size       |
 |----------------------|------------|
-| INDEX                | `4 bytes`  |
+| ID                   | `16 bytes` |
 | IP VERSION           | `1 byte`   |
 | IP                   | `16 bytes` |
 | PORT                 | `2 byte`   |
@@ -1456,43 +1456,43 @@ for P = response.fragments; P != 0; P--
   == N of Scoped Connections: 0x01 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 1 ==
   ===============================================================================
 
-  set connections_response = socket.recv(fragment_response.keys * 223)
+  set connections_response = socket.recv(fragment_response.keys * 235)
   
   explain(connections_response)
   
   =====================
   == Connection N° 1 ==
-  =================================================================================================================
-  == Index: 0x01 0x00 0x00 0x00                                                           => 1                   ==
-  == IP version: 0x04                                                                     => ipv4                ==
-  == IP: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 0.0.0.0             ==
-  == Port: 0x28 0x23                                                                      => 9000                ==
-  == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                  => 0                   ==
-  == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                 => 0                   ==
-  == Published Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Received Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Allocated Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Consumed Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Connected At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
-  == Insert Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Set Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
-  == Query Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Get Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
-  == Update Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Purge Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == List Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
-  == Info Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
-  == Stat Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
-  == Stats Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Subscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                          => 0                   ==
-  == Unsubscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
-  == Publish Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
-  == Connections Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
-  == Connection Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                         => 0                   ==
-  == Channels Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                           => 0                   ==
-  == Channel Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
-  == Whoami Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  =================================================================================================================
+  ==================================================================================================================================
+  == ID: 0x4F 0x26 0xE7 0xE7 0x55 0xA6 0x4C 0x75 0xB0 0xE6 0x9E 0x18 0xB1 0x8B 0x2A 0x86  => 4f26e7a7-55a6-4c75-b0e6-9e18b18b2a86 ==
+  == IP version: 0x04                                                                     => ipv4                                 ==
+  == IP: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 0.0.0.0                              ==
+  == Port: 0x28 0x23                                                                      => 9000                                 ==
+  == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                  => 0                                    ==
+  == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                 => 0                                    ==
+  == Published Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==                 
+  == Received Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Allocated Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Consumed Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Connected At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                                    ==
+  == Insert Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Set Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                                    ==
+  == Query Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Get Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                                    ==
+  == Update Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Purge Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == List Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                                    ==
+  == Info Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                                    ==
+  == Stat Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                                    ==
+  == Stats Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Subscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                          => 0                                    ==
+  == Unsubscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                                    ==
+  == Publish Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                                    ==
+  == Connections Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                                    ==
+  == Connection Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                         => 0                                    ==
+  == Channels Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                           => 0                                    ==
+  == Channel Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                                    ==
+  == Whoami Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  ==================================================================================================================================
 ```
 
 
@@ -1514,11 +1514,11 @@ The index contained in `4 bytes`.
 
 This server resolve this request, initially, by sending `1 byte` response.
 
-If `index` exists then will also include fixed `223 bytes`:
+If `index` exists then will also include fixed `235 bytes`:
 
 | Field                | Size       |
 |----------------------|------------|
-| INDEX                | `4 bytes`  |
+| ID                   | `16 bytes` |
 | IP VERSION           | `1 byte`   |
 | IP                   | `16 bytes` |
 | PORT                 | `2 byte`   |
@@ -1581,43 +1581,43 @@ set response = socket.recv(1)
 
 if response.success
 
-  set connection_response = socket.recv(223)
+  set connection_response = socket.recv(235)
 
   explain(connection_response)
   
   ================
   == Connection ==
-  =================================================================================================================
-  == Index: 0x01 0x00 0x00 0x00                                                           => 1                   ==
-  == IP version: 0x04                                                                     => ipv4                ==
-  == IP: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 0.0.0.0             ==
-  == Port: 0x28 0x23                                                                      => 9000                ==
-  == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                  => 0                   ==
-  == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                 => 0                   ==
-  == Published Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Received Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Allocated Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Consumed Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Connected At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
-  == Insert Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Set Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
-  == Query Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Get Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                   ==
-  == Update Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  == Purge Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == List Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
-  == Info Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
-  == Stat Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                   ==
-  == Stats Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                   ==
-  == Subscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                          => 0                   ==
-  == Unsubscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
-  == Publish Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
-  == Connections Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                   ==
-  == Connection Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                         => 0                   ==
-  == Channels Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                           => 0                   ==
-  == Channel Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                   ==
-  == Whoami Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                   ==
-  =================================================================================================================
+  ==================================================================================================================================
+  == ID: 0x4F 0x26 0xE7 0xE7 0x55 0xA6 0x4C 0x75 0xB0 0xE6 0x9E 0x18 0xB1 0x8B 0x2A 0x86  => 4f26e7a7-55a6-4c75-b0e6-9e18b18b2a86 ==
+  == IP version: 0x04                                                                     => ipv4                                 ==
+  == IP: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00  => 0.0.0.0                              ==
+  == Port: 0x28 0x23                                                                      => 9000                                 ==
+  == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                  => 0                                    ==
+  == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                 => 0                                    ==
+  == Published Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Received Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Allocated Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Consumed Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Connected At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                                    ==
+  == Insert Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Set Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                                    ==
+  == Query Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Get Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                => 0                                    ==
+  == Update Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  == Purge Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == List Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                                    ==
+  == Info Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                                    ==
+  == Stat Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                               => 0                                    ==
+  == Stats Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                              => 0                                    ==
+  == Subscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                          => 0                                    ==
+  == Unsubscribe Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                                    ==
+  == Publish Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                                    ==
+  == Connections Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                        => 0                                    ==
+  == Connection Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                         => 0                                    ==
+  == Channels Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                           => 0                                    ==
+  == Channel Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                            => 0                                    ==
+  == Whoami Requests: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                             => 0                                    ==
+  ==================================================================================================================================
 ```
 
 ### CHANNELS
@@ -1773,12 +1773,12 @@ If the byte is `0x01` then will also include `4 bytes` more:
 
 Per `Q` we need to read `28 bytes`:
 
-| Field            | Size      |
-|------------------|-----------|
-| CONNECTION INDEX | `4 bytes` |
-| SUBSCRIBED_AT    | `8 bytes` |
-| READ BYTES       | `8 bytes` |
-| WRITE BYTES      | `8 bytes` |
+| Field         | Size       |
+|---------------|------------|
+| CONNECTION ID | `16 bytes` |
+| SUBSCRIBED_AT | `8 bytes`  |
+| READ BYTES    | `8 bytes`  |
+| WRITE BYTES   | `8 bytes`  |
 
 #### How to use
 
@@ -1820,16 +1820,16 @@ explain(response);
 
 for P = response.number_of_connections; P != 0; P--
   
-    set channel_response = socket.recv(28)
+    set channel_response = socket.recv(40)
     
     explain(channel_response)
     
-    =====================================================================================
-    == Connection Index: 0x01 0x00 0x00 0x00                      => Connection #1     ==
-    == Subscribed At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00     => 0                 ==
-    == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00        => 0                 ==
-    == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00       => 0                 ==
-    =====================================================================================
+    =============================================================================================================================================
+    == Connection ID: 0x4F 0x26 0xE7 0xE7 0x55 0xA6 0x4C 0x75 0xB0 0xE6 0x9E 0x18 0xB1 0x8B 0x2A 0x86  => 4f26e7a7-55a6-4c75-b0e6-9e18b18b2a86 ==
+    == Subscribed At: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                          => 0                                    ==
+    == Read Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                             => 0                                    ==
+    == Write Bytes: 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00                                            => 0                                    ==
+    =============================================================================================================================================
 ```
 
 ### WHOAMI
@@ -1844,4 +1844,4 @@ The first `byte` must be `0x18`.
 
 #### Response
 
-This server resolve this request, by sending the connection index in `4 bytes`.
+This server resolve this request, by sending the connection ID in `16 bytes`.
