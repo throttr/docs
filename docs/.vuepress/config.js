@@ -5,8 +5,8 @@ import { viteBundler } from '@vuepress/bundler-vite'
 export default defineUserConfig({
   lang: 'en-US',
 
-  title: 'Throttr — Sovereign In-Memory Service',
-  description: 'The limit is set by your machine.',
+  title: 'Throttr — Sovereign Real-Time Data & Messaging Engine',
+  description: 'The limit is set by your machine and your architecture.',
 
   theme: defaultTheme({
     logo: '/images/logo.png',
