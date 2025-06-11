@@ -16,11 +16,13 @@ There are a different ways to get Throttr Server running.
 
 #### Using Binaries
 
+> We have only binaries for `AMD64` and are not compiled with `architecture optimizations`.
+
 This is the most easy and fast way to get an instance ready to accept connections and handle requests.
 
-The first step is go to the [Throttr Server Repository][] and click on `Releases`.
+The first step is go to the [Throttr Releases][].
 
-![Assets per release](/images/releases-assets.png)
+![Assets per release](/images/releases.png)
 
 Download and extract it. You can run it by using the following command:
 
@@ -28,39 +30,96 @@ Download and extract it. You can run it by using the following command:
 ./throttr --port=9000 --threads=4
 ```
 
-#### Using Docker
+The command parameters are:
 
-This is the most easy and fast way to get
+- `--socket=/srv/throttr.sock` to define `unix` socket directory and file.
+- `--port=9000` to define `tcp` port used by the listener.
+- `--threads=2` to define `concurrent` threads used by server.
+- `--persistent=true` to enable `persistent` keys on the server. `unstable`.
+- `--dump=/srv/throttr.db` to define `dump` file. `unstable`.
+
+#### Using Docker and Docker Compose
+
+This is the most easy and fast way to get an instance running:
+
+##### Steps
+
+###### 1. Define your architecture: 
+
+Are you using `amd64` or `arm64`? If you're using some of them, you'll be able to use throttr.
+
+Consider your architecture as `A`. IE: `A = amd64` or `A = arm64`.
+
+###### 2. Define your `counter` and `buffers` size. 
+
+Consider `V` as size. 
+
+If your `quota` or `buffer` length is ...
+
+- Upto `255` then `V = uint8`.  
+- Upto `65,535` then `V = uint16`.  
+- Upto `4,294,967,295` then `V = uint32`.  
+- Upto `2^64 - 1` then `V = uint64`.  
+
+###### 3. Define your `build` type.
+
+Consider `T` as type.
+
+If you want to have logs then use `debug`.
+
+Otherwise, if you expect maximum performance, use `release`.
+
+###### 4. Define your `metrics` feature flag.
+
+Consider `M` as flag.
+
+If you want to have metrics to measure:
+
+- Network bandwidth usage per `connection` and `channel`.
+- Read and writes for `counters` and `buffers`.
+- Statistics per request type.
+
+Use `M = enabled`. Otherwise `M = disabled`.
+
+###### 5. Get the instance running.
+
+You can get the instance, using the previous defined variables by using the following `bash` script.
 
 ```bash
-// For Quotas/TTL and Buffers on AMD64
+# Once you define your instance type:
 
-// Upto 255
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint8-amd64
+A="amd64"
+V="uint16"
+T="debug"
+M="enabled"
 
-// Upto 65.535
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint16-amd64
+# Pull the image
+docker pull ghcr.io/throttr/throttr:5.0.5-${T}-${V}-${A}-metrics-${M}
 
-// Upto 4.294.967.295
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint32-amd64
+# Tag locally
+docker tag ghcr.io/throttr/throttr:5.0.5-${T}-${V}-${A}-metrics-${M} throttr:local
 
-// Upto 2^64 - 1
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint64-amd64
-
-// For Quotas/TTL and Buffers on ARM64
-
-// Upto 255
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint8-arm64
-
-// Upto 65.535
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint16-arm64
-
-// Upto 4.294.967.295
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint32-arm64
-
-// Upto 2^64 - 1
-docker run -p 9000:9000 ghcr.io/throttr/throttr:5.0.2-debug-uint64-arm64
+# Run
+docker run -p 9000:9000 throttr:local
 ```
+
+Or use `Docker Compose`, of course, you should modify them:
+
+```yaml
+version: '3.8'
+
+services:
+  throttr:
+    image: ghcr.io/throttr/throttr:5.0.5-debug-uint16-amd64-metrics-enabled
+    ports:
+      - "9000:9000"
+    container_name: throttr
+```
+
+Finally, you can make it run using `docker compose up`.
+
+
+
 
 #### Building from Source
 
@@ -1009,3 +1068,4 @@ This component provides the safe mutation mechanisms needed to adapt state dynam
 
 
 [official GitHub repository]: https://github.com/throttr/throttr
+[Throttr Releases]: https://github.com/throttr/throttr/releases

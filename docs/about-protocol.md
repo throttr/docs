@@ -379,8 +379,9 @@ The first `byte` must be `0x08`.
 
 #### Response
 
-This server resolve this request, initially, by sending `236 bytes` response.
+This server resolve this request, initially, by sending `237 bytes` response.
 
+The first byte is `0x01`.
 
 | Field                             | Size       |
 |-----------------------------------|------------|
@@ -437,6 +438,8 @@ This server resolve this request, initially, by sending `236 bytes` response.
 | RUNNING SINCE                     | `8 bytes`  |
 | TOTAL CONNECTIONS                 | `8 bytes`  |
 | VERSION                           | `16 bytes` |
+
+> Metrics based attributes will be `zero` if are disabled.
 
 ### STAT
 
@@ -620,11 +623,13 @@ After that we receive P fragments in `16 bytes`:
 | FRAGMENT                         | `8 bytes` |
 | NUMBER OF SCOPED CONNECTIONS (Q) | `8 bytes` |
 
-Per `Q` we are going to receive fixed `235 bytes`:
+Per `Q` we are going to receive fixed `237 bytes`:
 
 | Field                  | Size       |
 |------------------------|------------|
 | ID                     | `16 bytes` |
+| TYPE                   | `1 byte`   |
+| KIND                   | `1 byte`   |
 | IP VERSION             | `1 byte`   |
 | IP                     | `16 bytes` |
 | PORT                   | `2 byte`   |
@@ -653,6 +658,10 @@ Per `Q` we are going to receive fixed `235 bytes`:
 | `CHANNELS` REQUESTS    | `8 bytes`  |
 | `CHANNEL` REQUESTS     | `8 bytes`  |
 | `WHOAMI` REQUESTS      | `8 bytes`  |
+
+> `TYPE` will be  `0x00` if is client or `0x01` if is agent.
+
+> `KIND` will be `0x00` if is `TCP` connection and `0x01` if is `UNIX`.
 
 ### CONNECTION
 
@@ -672,11 +681,13 @@ The index contained in `4 bytes`.
 
 This server resolve this request, initially, by sending `1 byte` response.
 
-If `index` exists then will also include fixed `235 bytes`:
+If `index` exists then will also include fixed `237 bytes`:
 
 | Field                  | Size       |
 |------------------------|------------|
 | ID                     | `16 bytes` |
+| TYPE                   | `1 byte`   |
+| KIND                   | `1 byte`   |
 | IP VERSION             | `1 byte`   |
 | IP                     | `16 bytes` |
 | PORT                   | `2 byte`   |
@@ -705,6 +716,11 @@ If `index` exists then will also include fixed `235 bytes`:
 | `CHANNELS` REQUESTS    | `8 bytes`  |
 | `CHANNEL` REQUESTS     | `8 bytes`  |
 | `WHOAMI` REQUESTS      | `8 bytes`  |
+
+
+> `TYPE` will be  `0x00` if is client or `0x01` if is agent.
+
+> `KIND` will be `0x00` if is `TCP` connection and `0x01` if is `UNIX`.
 
 ### CHANNELS
 
@@ -731,14 +747,14 @@ After that we receive P fragments in `16 bytes`:
 | FRAGMENT                      | `8 bytes` |
 | NUMBER OF SCOPED CHANNELS (Q) | `8 bytes` |
 
-Per `Q` we are going to receive fixed `21 bytes`:
+Per `Q` we are going to receive fixed `25 bytes`:
 
 | Field                  | Size      |
 |------------------------|-----------|
 | CHANNEL SIZE (QL)      | `1 byte`  |
 | READ BYTES             | `8 bytes` |
 | WRITE BYTES            | `8 bytes` |
-| SUBSCRIBED CONNECTIONS | `4 bytes` |
+| SUBSCRIBED CONNECTIONS | `8 bytes` |
 
 At the end of the fragment we are going receive the keys in `R bytes` (sum of `QL`):
 
@@ -774,7 +790,7 @@ If the byte is `0x01` then will also include `4 bytes` more:
 |---------------------------|-----------|
 | NUMBER OF SUBSCRIBERS (Q) | `8 bytes` |
 
-Per `Q` we need to read `28 bytes`:
+Per `Q` we need to read `40 bytes`:
 
 | Field         | Size       |
 |---------------|------------|
