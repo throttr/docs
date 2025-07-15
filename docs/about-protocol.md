@@ -39,6 +39,18 @@ Is an in-memory system entity, identify by a key. It can be a `counter` or `buff
 
 Records are designed to expire in some time point. That point is established when the record is created and modified during TTL's updates.
 
+### Counter
+
+Is a numeric value atomically contained. 
+
+For example, today's number visitors of your website. 
+
+### Buffer
+
+Is a arbitrary shape value, vectorized, atomically contained. 
+
+For example, the latest's published articles of your website as JSON. 
+
 ### Key
 
 Is a unique value to identify the record in the system. His value is stored in a binary container and comparable using hashing. You can define the keys that fit with your use cases.
@@ -56,7 +68,6 @@ Then:
   - Lower than `65.535` then use `uint16`.
   - Lower than `4.294.967.295` then use `uint32`.
   - Lower than `2^64 - 1` then use `uint64`.
-
 
 > Why is so important?
 
@@ -88,17 +99,21 @@ For example, the number 2 represented in two bytes would be stored as:
 
 This order affects how data is interpreted when reading raw bytes in memory or across systems.
 
-Throttr use `little endian` by default. This reduces the amount of mathematical operations to reorder the data on compatible architecture. Almost all current CPU architecture uses little-endian by default. 
+Serialized messages use `little endian` by default. This reduces the amount of mathematical operations to reorder the data on compatible architecture. Almost all current CPU architecture uses little-endian by default.
 
-Usually, standards of `IETF`, `IEEE` and `ISO` recommend `big endian`. This protocol doesn't try go against the standard. The protocol tries avoid as possible, the undesired and forced conversion operations, in order to provide less contention.
+Server is able to receive `little endian` y converts values on `big endian` CPU architectures. 
+
+Software development kits must be convert values from `native` to `little endian`.
 
 ## Request types
 
-Version `v7.1.0` supports the following request types:
+Version `v7.3.2` supports the following request types:
 
 ### INSERT
 
-This request can add counters to the memory.
+![](/images/insert.png)
+
+This request can add a `counter` to the storage.
 
 #### Required fields
 
@@ -134,6 +149,8 @@ The client will receive `0x01` on success or `0x00` on failure.
 
 ### QUERY
 
+![](/images/query.png)
+
 This request can retrieve `counters`.
 
 #### Required fields
@@ -166,6 +183,8 @@ If the status was `success`, then, it also will include:
 | TTL      | `N bytes` |
 
 ### UPDATE
+
+![](/images/update.png)
 
 This request can modify `counters` and `buffers`.
 
@@ -201,10 +220,8 @@ It can be:
 | DECREASE | `0x02` |
 
 > The `DECREASE` can produce `0x00` as response if the result of the operation over `Quota` is negative.
-
-
+> 
 > Any operation over `TTL` will invoke the procedure to reschedule the expiration timer.
-
 
 ##### Value
 
@@ -225,6 +242,8 @@ This server resolve this request by sending `1 byte` response.
 The client will receive `0x01` on success or `0x00` on failure.
 
 ### PURGE
+
+![](/images/purge.png)
 
 This request can remove `counters` and `buffers`.
 
@@ -250,6 +269,8 @@ The client will receive `0x01` on success or `0x00` on failure.
 
 ### SET
 
+![](/images/set.png)
+
 This request can add buffers to the memory.
 
 #### Required fields
@@ -270,7 +291,6 @@ Is the amount in TTL units applicable to the counter. Contained in `N bytes`.
 
 Is the quantity of chars (`M`) used by the key. Contained in `1 byte`.
 
-
 ##### Size of value
 
 Is the quantity of chars (`O`) used by the value. Contained in `1 byte`.
@@ -290,6 +310,8 @@ The server resolve this request by sending `1 byte` response.
 The client will receive `0x01` on success or `0x00` on failure.
 
 ### GET
+
+![](/images/get.png)
 
 This request can retrieve `buffers`.
 
@@ -315,7 +337,6 @@ The client will receive `0x01` on success or `0x00` on failure.
 
 If the status was `success`, then, it also will include:
 
-
 | Field            | Size      |
 |------------------|-----------|
 | TTL TYPE         | `1 byte`  |
@@ -325,7 +346,9 @@ If the status was `success`, then, it also will include:
 
 ### LIST
 
-This request can list `counters` and `buffers`.
+![](/images/list.png)
+
+This request lists stored `records`.
 
 #### Required fields
 
@@ -369,6 +392,8 @@ At the end of the fragment we are going receive the keys in `R bytes` (sum of `Q
 
 ### INFO
 
+![](/images/info.png)
+
 This request can provide instance related information.
 
 #### Required fields
@@ -379,9 +404,9 @@ The first `byte` must be `0x08`.
 
 #### Response
 
-This server resolve this request, initially, by sending `237 bytes` response.
+This server resolve this request, initially, by sending `433 bytes` response.
 
-The first byte is `0x01`.
+The first byte is `0x01`. After that you'll have the following fields, in that order.
 
 | Field                             | Size       |
 |-----------------------------------|------------|
@@ -443,6 +468,8 @@ The first byte is `0x01`.
 
 ### STAT
 
+![](/images/stat.png)
+
 This request can provide metrics for specific `counter` or `buffer`.
 
 #### Required fields
@@ -474,6 +501,8 @@ If the byte is `0x01` then will also include `32 bytes` more:
 
 ### STATS
 
+![](/images/stats.png)
+
 This request can provide metrics of `counters` and `buffers`.
 
 #### Required fields
@@ -485,7 +514,6 @@ The first `byte` must be `0x10`.
 #### Response
 
 This server resolve this request, initially, by sending `8 bytes` response.
-
 
 | Field              | Size      |
 |--------------------|-----------|
@@ -518,6 +546,8 @@ At the end of the fragment we are going receive the keys in `R bytes` (sum of `Q
 
 ### SUBSCRIBE
 
+![](/images/subscribe.png)
+
 This request can start a subscription to a `channel`.
 
 #### Required fields
@@ -542,6 +572,8 @@ The client will receive `0x01` on success or `0x00` on failure.
 
 ### UNSUBSCRIBE
 
+![](/images/unsubscribe.png)
+
 This request can finish a subscription to a `channel`.
 
 #### Required fields
@@ -565,6 +597,8 @@ This server resolve this request by sending `1 byte` response.
 The client will receive `0x01` on success or `0x00` on failure.
 
 ### PUBLISH
+
+![](/images/publish.png)
 
 This request can send a buffer to a subscribed `channel`.
 
@@ -599,6 +633,8 @@ The client will receive `0x01` on success or `0x00` on failure.
 [official GitHub repository]: https://github.com/throttr/protocol
 
 ### CONNECTIONS
+
+![](/images/connections.png)
 
 This request can list `connections`.
 
@@ -665,6 +701,8 @@ Per `Q` we are going to receive fixed `237 bytes`:
 
 ### CONNECTION
 
+![](/images/connection.png)
+
 This request can retrieve metadata about specific `connection`.
 
 #### Required fields
@@ -717,12 +755,13 @@ If `index` exists then will also include fixed `237 bytes`:
 | `CHANNEL` REQUESTS     | `8 bytes`  |
 | `WHOAMI` REQUESTS      | `8 bytes`  |
 
-
 > `TYPE` will be  `0x00` if is client or `0x01` if is agent.
 
 > `KIND` will be `0x00` if is `TCP` connection and `0x01` if is `UNIX`.
 
 ### CHANNELS
+
+![](/images/channels.png)
 
 This request can list `channels`.
 
@@ -764,6 +803,8 @@ At the end of the fragment we are going receive the keys in `R bytes` (sum of `Q
 
 ### CHANNEL
 
+![](/images/channel.png)
+
 This request can provide metrics for specific `channel`.
 
 #### Required fields
@@ -800,6 +841,8 @@ Per `Q` we need to read `40 bytes`:
 | WRITE BYTES   | `8 bytes`  |
 
 ### WHOAMI
+
+![](/images/whoami.png)
 
 This request can provide the index of the current connection.
 
