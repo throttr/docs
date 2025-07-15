@@ -842,6 +842,8 @@ Per `Q` we need to read `40 bytes`:
 
 ### WHOAMI
 
+![](/images/whoami.png)
+
 This request can provide the index of the current connection.
 
 #### Required fields
