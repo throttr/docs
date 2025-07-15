@@ -678,7 +678,7 @@ If `INSERT` was `success` then is the first consume time and if `UPDATE` was `su
 
 - The protocol assumes Little Endian architecture.
 - The internal message queue ensures requests are processed sequentially.
-- The package is defined to works with protocol 5.0.5 or greatest.
+- The package is defined to works with protocol 5.0.11 or greatest.
 
 ---
 
